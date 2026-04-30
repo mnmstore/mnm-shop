@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart - MNM Midnight Muse</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a1a; color: #e0e0e0; font-family: 'Georgia', serif; padding: 1rem; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #c9a03d; margin-bottom: 1rem; }
+        h2 { color: #c9a03d; margin: 1.5rem 0 1rem; }
+        
+        /* Cart Items */
+        .cart-item { background: #111122; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; border: 1px solid #2a2a3a; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .cart-item-image { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; background: #1a1a2e; }
+        .cart-item-details { flex: 1; }
+        .cart-item-name { font-weight: bold; }
+        .cart-item-size { color: #c9a03d; font-size: 0.8rem; }
+        .cart-item-price { color: #c9a03d; }
+        .cart-item-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        
+        .total { font-size: 1.5rem; text-align: right; color: #c9a03d; margin: 1rem 0; padding: 1rem; background: #111122; border-radius: 12px; }
+        input, select { width: 100%; padding: 0.8rem; margin: 0.5rem 0; background: #1a1a2e; border: 1px solid #2a2a3a; color: #e0e0e0; border-radius: 8px; }
+        .payment-option { border: 1px solid #2a2a3a; padding: 1rem; margin-bottom: 1rem; border-radius: 12px; cursor: pointer; background: #111122; }
+        .payment-option.selected { border-color: #c9a03d; background: #1a1a2e; }
+        .hidden { display: none; }
+        .checkout-btn { background: #c9a03d; color: #0a0a1a; padding: 1rem; width: 100%; border: none; font-weight: bold; font-size: 1.2rem; cursor: pointer; border-radius: 8px; margin-top: 1rem; }
+        .back-link { display: inline-block; margin-top: 1rem; color: #c9a03d; text-decoration: none; }
+        .quantity-btn { background: #2a2a3a; border: none; color: #c9a03d; width: 30px; height: 30px; cursor: pointer; border-radius: 6px; }
+        .remove-btn { background: #2a2a3a; border: none; color: #e0e0e0; padding: 5px 10px; cursor: pointer; border-radius: 6px; }
+        .empty-cart { text-align: center; padding: 3rem; background: #111122; border-radius: 12px; }
+        
+        /* Bank Details */
+        .bank-details { background: #1a1a2e; padding: 1.5rem; border-radius: 12px; margin: 1rem 0; border-left: 4px solid #c9a03d; }
+        .bank-details h3 { color: #c9a03d; margin-bottom: 1rem; }
+        .copy-btn { background: #2a2a3a; color: #c9a03d; border: none; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; margin-left: 10px; }
+        
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #c9a03d;
+            color: #0a0a1a;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            border: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .back-to-top:hover { background: #b88a2c; }
+        
+        @media (max-width: 600px) {
+            .cart-item { flex-direction: column; text-align: center; }
+            .cart-item-actions { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🛒 Your Cart</h1>
+    <div id="cart-items"></div>
+    <div id="total" class="total"></div>
+
+    <div id="checkout-section" style="display: none;">
+        <h2>Contact Information</h2>
+        <input type="text" id="customer-name" placeholder="Full name" required>
+        <input type="email" id="customer-email" placeholder="Email address" required>
+        <input type="tel" id="customer-phone" placeholder="Phone number (e.g., 024XXXXXXX)" required>
+
+        <h2>Payment Method</h2>
+        <div class="payment-option" onclick="selectPayment('bank')" id="pay-bank">
+            🏦 Bank Transfer
+        </div>
+        <div class="payment-option" onclick="selectPayment('mobile')" id="pay-mobile">
+            📱 Mobile Money (MTN, Telecel, AirtelTigo)
+        </div>
+
+        <div id="mobile-field" class="hidden">
+            <select id="mobile-network">
+                <option value="mtn">MTN MoMo</option>
+                <option value="vodafone">Telecel Cash</option>
+                <option value="airteltigo">AirtelTigo Money</option>
+            </select>
+            <input type="tel" id="mobile-number" placeholder="Phone number">
+        </div>
+
+        <div id="bank-details-container"></div>
+
+        <button class="checkout-btn" onclick="processPayment()">Complete Order</button>
+    </div>
+
+    <a href="index.html" class="back-link">← Continue Shopping</a>
+</div>
+
+<!-- Back to Top Button -->
+<button class="back-to-top" id="backToTopBtn" onclick="scrollToTop()">↑</button>
+
+<script>
+    // ==================== LOAD CART ====================
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let selectedPayment = 'bank';
+
+    // ==================== BACK TO TOP ====================
+    window.onscroll = function() {
+        const btn = document.getElementById('backToTopBtn');
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+            btn.classList.add('show');
+        } else {
+            btn.classList.remove('show');
+        }
+    };
+
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ==================== DISPLAY CART (WITH IMAGES) ====================
+    function displayCart() {
+        const container = document.getElementById('cart-items');
+        const totalDiv = document.getElementById('total');
+        const checkoutSection = document.getElementById('checkout-section');
+
+        if (!cart.length) {
+            container.innerHTML = '<div class="empty-cart">🛍️ Your cart is empty.<br><br><a href="index.html" style="color: #c9a03d;">Continue shopping</a></div>';
+            totalDiv.innerHTML = '';
+            checkoutSection.style.display = 'none';
+            return;
+        }
+
+        let html = '';
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            total += item.price * item.quantity;
+            html += `
+                <div class="cart-item">
+                    <img src="${item.image || 'https://placehold.co/70x70/1a1a2e/c9a03d?text=MNM'}" class="cart-item-image" onerror="this.src='https://placehold.co/70x70/1a1a2e/c9a03d?text=MNM'">
+                    <div class="cart-item-details">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-size">Size: ${item.size}</div>
+                        <div class="cart-item-price">₵${item.price} each</div>
+                    </div>
+                    <div class="cart-item-actions">
+                        <button class="quantity-btn" onclick="changeQuantity(${index}, -1)">-</button>
+                        <span>${item.quantity}</span>
+                        <button class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</button>
+                        <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
+                    </div>
+                    <div style="min-width: 80px; text-align: right;">₵${item.price * item.quantity}</div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        totalDiv.innerHTML = `TOTAL: ₵${total}`;
+        checkoutSection.style.display = 'block';
+        
+        if (selectedPayment === 'bank') {
+            showBankDetails();
+        }
+    }
+
+    function changeQuantity(index, delta) {
+        let newQty = cart[index].quantity + delta;
+        if (newQty < 1) return;
+        cart[index].quantity = newQty;
+        localStorage.setItem('cart', JSON.stringify(cart));
+        displayCart();
+        updateCartCounter();
+    }
+
+    function removeItem(index) {
+        cart.splice(index, 1);
+        localStorage.setItem('cart', JSON.stringify(cart));
+        displayCart();
+        updateCartCounter();
+        if (cart.length === 0) {
+            document.getElementById('checkout-section').style.display = 'none';
+        }
+    }
+
+    function updateCartCounter() {
+        const total = cart.reduce((sum, i) => sum + i.quantity, 0);
+        localStorage.setItem('cartCount', total);
+    }
+
+    // ==================== PAYMENT SELECTION ====================
+    function selectPayment(method) {
+        selectedPayment = method;
+        document.getElementById('pay-bank').classList.remove('selected');
+        document.getElementById('pay-mobile').classList.remove('selected');
+        document.getElementById(`pay-${method}`).classList.add('selected');
+        
+        document.getElementById('mobile-field').classList.add('hidden');
+        document.getElementById('bank-details-container').innerHTML = '';
+        
+        if (method === 'mobile') {
+            document.getElementById('mobile-field').classList.remove('hidden');
+        } else if (method === 'bank') {
+            showBankDetails();
+        }
+    }
+
+    // ==================== BANK DETAILS ====================
+    function showBankDetails() {
+        const container = document.getElementById('bank-details-container');
+        if (!container) return;
+        
+        container.innerHTML = `
+            <div class="bank-details">
+                <h3>🏦 Bank Transfer Details</h3>
+                <p><strong>Bank:</strong> Consolidated Bank Ghana</p>
+                <p><strong>Account Name:</strong> Midnight Muse</p>
+                <p><strong>Account Number:</strong> 1234567890</p>
+                <p><strong>Branch:</strong> Accra Main</p>
+                <p><strong>Reference:</strong> <span id="bank-ref">${generateOrderId()}</span> <button class="copy-btn" onclick="copyReference()">Copy</button></p>
+                <p style="font-size: 0.8rem; color: #888;">After payment, we'll confirm within 24 hours.</p>
+            </div>
+        `;
+    }
+
+    function generateOrderId() {
+        return 'MNM-' + Date.now();
+    }
+
+    function copyReference() {
+        const ref = document.getElementById('bank-ref').textContent;
+        navigator.clipboard.writeText(ref);
+        alert('Reference copied: ' + ref);
+    }
+
+    // ==================== SAVE ORDER ====================
+    function saveOrder() {
+        if (!cart.length) return null;
+        
+        const orderId = generateOrderId();
+        const total = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+        
+        let completedOrders = JSON.parse(localStorage.getItem('completedOrders')) || [];
+        
+        completedOrders.push({
+            orderId: orderId,
+            timestamp: new Date().toISOString(),
+            totalAmount: total,
+            totalItems: cart.reduce((sum, i) => sum + i.quantity, 0),
+            items: cart.map(item => ({
+                name: item.name,
+                size: item.size,
+                quantity: item.quantity,
+                price: item.price,
+                image: item.image || ''
+            }))
+        });
+        
+        localStorage.setItem('completedOrders', JSON.stringify(completedOrders));
+        return orderId;
+    }
+
+    // ==================== PROCESS PAYMENT ====================
+    function processPayment() {
+        const name = document.getElementById('customer-name').value;
+        const email = document.getElementById('customer-email').value;
+        const phone = document.getElementById('customer-phone').value;
+
+        if (!name || !email || !phone) {
+            alert('❌ Please fill in your name, email, and phone number');
+            return;
+        }
+
+        if (cart.length === 0) {
+            alert('❌ Your cart is empty');
+            return;
+        }
+
+        const total = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+        
+        const orderId = saveOrder();
+        
+        if (!orderId) {
+            alert('❌ Error saving order');
+            return;
+        }
+
+        if (selectedPayment === 'bank') {
+            alert(`✅ ORDER PLACED!\n\nOrder #: ${orderId}\nName: ${name}\nTotal: ₵${total}\n\nUse the bank details above to complete payment.`);
+            
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            localStorage.setItem('cartCount', 0);
+            
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-email').value = '';
+            document.getElementById('customer-phone').value = '';
+            
+            displayCart();
+            
+            setTimeout(() => {
+                const goToDashboard = confirm('Order saved! View your dashboard?');
+                if (goToDashboard) {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, 500);
+        }
+        else if (selectedPayment === 'mobile') {
+            const mobilePhone = document.getElementById('mobile-number').value;
+            if (!mobilePhone) {
+                alert('❌ Please enter your mobile money phone number');
+                return;
+            }
+            const network = document.getElementById('mobile-network').value;
+            const networkName = network === 'mtn' ? 'MTN MoMo' : (network === 'vodafone' ? 'Telecel Cash' : 'AirtelTigo Money');
+            
+            alert(`✅ ORDER PLACED!\n\nOrder #: ${orderId}\nName: ${name}\nTotal: ₵${total}\n\n📱 ${networkName}\nPhone: ${mobilePhone}\n\nYou will receive a prompt to complete payment.`);
+            
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
+            localStorage.setItem('cartCount', 0);
+            
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-email').value = '';
+            document.getElementById('customer-phone').value = '';
+            document.getElementById('mobile-number').value = '';
+            
+            displayCart();
+            
+            setTimeout(() => {
+                const goToDashboard = confirm('Order saved! View your dashboard?');
+                if (goToDashboard) {
+                    window.location.href = 'dashboard.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, 500);
+        }
+    }
+
+    // ==================== INITIALIZE ====================
+    displayCart();
+</script>
+</body>
+</html>
