@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNM - Sales Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0a0a1a; color: #e0e0e0; font-family: 'Georgia', serif; padding: 1rem; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { color: #c9a03d; text-align: center; margin-bottom: 0.5rem; }
+        .subtitle { text-align: center; margin-bottom: 2rem; color: #888; }
+        
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: #111122; padding: 1rem; border-radius: 12px; text-align: center; border: 1px solid #2a2a3a; }
+        .stat-number { font-size: 1.8rem; color: #c9a03d; font-weight: bold; }
+        .stat-label { color: #888; font-size: 0.8rem; margin-top: 0.5rem; }
+        
+        .chart-container { background: #111122; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid #2a2a3a; }
+        .chart-title { color: #c9a03d; margin-bottom: 1rem; font-size: 1.2rem; }
+        .bar-item { margin-bottom: 1rem; }
+        .bar-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem; }
+        .bar-bg { background: #1a1a2e; border-radius: 8px; overflow: hidden; }
+        .bar-fill { background: #c9a03d; padding: 0.5rem; color: #0a0a1a; text-align: right; font-size: 0.8rem; border-radius: 8px; }
+        
+        .orders-list { max-height: 400px; overflow-y: auto; }
+        .order-item { background: #1a1a2e; padding: 0.8rem; border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid #c9a03d; }
+        
+        .button-group { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center; }
+        .btn { background: #c9a03d; color: #0a0a1a; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-danger { background: #8b0000; color: white; }
+        .btn-danger:hover { background: #a00000; }
+        .btn:hover { background: #b88a2c; }
+        
+        footer { text-align: center; padding: 2rem; border-top: 1px solid #2a2a3a; margin-top: 2rem; color: #666; }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #c9a03d;
+            color: #0a0a1a;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            border: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+        .back-to-top.show { opacity: 1; visibility: visible; }
+        
+        @media (max-width: 600px) { .stat-number { font-size: 1.2rem; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📊 MNM SALES DASHBOARD</h1>
+    <p class="subtitle">Real-time order tracking</p>
+
+    <div class="button-group">
+        <button class="btn" onclick="loadDashboard()">🔄 Refresh</button>
+        <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All Dashboard Data</button>
+    </div>
+
+    <div id="dashboard-content">
+        <div class="stats" id="stats">Loading...</div>
+        <div class="chart-container"><div class="chart-title">📈 Sales by Product</div><div id="product-chart">Loading...</div></div>
+        <div class="chart-container"><div class="chart-title">👕 Sales by Size</div><div id="size-chart">Loading...</div></div>
+        <div class="chart-container"><div class="chart-title">🕐 Recent Orders</div><div id="recent-orders" class="orders-list">Loading...</div></div>
+    </div>
+
+    <footer><p>© 2026 Midnight Muse — Real-time dashboard</p></footer>
+</div>
+
+<button class="back-to-top" id="backToTopBtn" onclick="scrollToTop()">↑</button>
+
+<script>
+    window.onscroll = function() {
+        const btn = document.getElementById('backToTopBtn');
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+            btn.classList.add('show');
+        } else {
+            btn.classList.remove('show');
+        }
+    };
+
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+    function loadDashboard() {
+        const orders = JSON.parse(localStorage.getItem('completedOrders')) || [];
+        
+        if (orders.length === 0) {
+            document.getElementById('dashboard-content').innerHTML = '<div style="text-align:center; padding:3rem;">📭 No orders yet. Complete an order on the cart page.</div>';
+            return;
+        }
+        
+        // Calculate stats
+        let totalSales = 0, totalItems = 0;
+        orders.forEach(order => { totalSales += order.totalAmount; totalItems += order.totalItems; });
+        const avgOrder = totalSales / orders.length;
+        
+        document.getElementById('stats').innerHTML = `
+            <div class="stat-card"><div class="stat-number">₵${totalSales.toLocaleString()}</div><div class="stat-label">Total Sales</div></div>
+            <div class="stat-card"><div class="stat-number">${orders.length}</div><div class="stat-label">Total Orders</div></div>
+            <div class="stat-card"><div class="stat-number">₵${Math.round(avgOrder)}</div><div class="stat-label">Average Order</div></div>
+            <div class="stat-card"><div class="stat-number">${totalItems}</div><div class="stat-label">Items Sold</div></div>
+        `;
+        
+        // Sales by Product
+        const productMap = {};
+        orders.forEach(order => {
+            order.items.forEach(item => {
+                const name = item.name;
+                productMap[name] = (productMap[name] || 0) + (item.price * item.quantity);
+            });
+        });
+        renderBarChart('product-chart', productMap, 'amount');
+        
+        // Sales by Size
+        const sizeMap = {};
+        orders.forEach(order => {
+            order.items.forEach(item => {
+                const size = item.size;
+                sizeMap[size] = (sizeMap[size] || 0) + item.quantity;
+            });
+        });
+        renderBarChart('size-chart', sizeMap, 'quantity');
+        
+        // Recent Orders
+        const recent = [...orders].reverse().slice(0, 10);
+        document.getElementById('recent-orders').innerHTML = recent.map(order => `
+            <div class="order-item">
+                <strong>${order.orderId}</strong> - ₵${order.totalAmount} - ${new Date(order.timestamp).toLocaleString()}<br>
+                ${order.items.map(i => `${i.name} (${i.size}) x${i.quantity}`).join(', ')}
+            </div>
+        `).join('');
+    }
+    
+    function renderBarChart(containerId, data, type) {
+        const container = document.getElementById(containerId);
+        const entries = Object.entries(data);
+        if (entries.length === 0) { container.innerHTML = '<div>No data yet</div>'; return; }
+        entries.sort((a,b) => b[1] - a[1]);
+        const max = Math.max(...entries.map(e => e[1]));
+        container.innerHTML = entries.map(([name, val]) => `
+            <div class="bar-item"><div class="bar-label"><span>${name}</span><span>${type === 'amount' ? '₵' + val : val + ' items'}</span></div>
+            <div class="bar-bg"><div class="bar-fill" style="width: ${(val/max)*100}%;">${type === 'amount' ? '₵' + val : val + ' items'}</div></div></div>
+        `).join('');
+    }
+    
+    function clearAllData() {
+        if (confirm('⚠️ WARNING: This will delete ALL order data from your dashboard. This cannot be undone. Continue?')) {
+            localStorage.removeItem('completedOrders');
+            localStorage.removeItem('cart');
+            localStorage.removeItem('cartCount');
+            alert('✅ All dashboard data has been cleared.');
+            loadDashboard();
+            if (confirm('Return to shop page?')) window.location.href = 'index.html';
+        }
+    }
+    
+    loadDashboard();
+</script>
+</body>
+</html>
