@@ -3,69 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Cart - MNM Midnight Muse</title>
+    <title>Checkout - MNM Midnight Muse</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: #0a0a1a; color: #e0e0e0; font-family: 'Georgia', serif; padding: 1rem; }
         .container { max-width: 800px; margin: 0 auto; }
-        h1 { color: #c9a03d; margin-bottom: 1rem; }
-        h2 { color: #c9a03d; margin: 1.5rem 0 1rem; }
+        h1 { color: #c9a03d; margin-bottom: 1rem; border-bottom: 1px solid #2a2a3a; padding-bottom: 0.5rem; }
+        h2 { color: #c9a03d; margin: 1.5rem 0 0.5rem; font-size: 1.2rem; }
+        h3 { color: #c9a03d; margin-bottom: 0.5rem; font-size: 1rem; }
         
         /* Cart Items */
-        .cart-item { background: #111122; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; border: 1px solid #2a2a3a; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-        .cart-item-image { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; background: #1a1a2e; }
-        .cart-item-details { flex: 1; }
-        .cart-item-name { font-weight: bold; }
-        .cart-item-size { color: #c9a03d; font-size: 0.8rem; }
-        .cart-item-price { color: #c9a03d; }
-        .cart-item-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        
+        .cart-item { background: #111122; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; border: 1px solid #2a2a3a; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .cart-item-info { flex: 2; }
+        .cart-item-actions { display: flex; gap: 10px; align-items: center; }
         .total { font-size: 1.5rem; text-align: right; color: #c9a03d; margin: 1rem 0; padding: 1rem; background: #111122; border-radius: 12px; }
-        input, select { width: 100%; padding: 0.8rem; margin: 0.5rem 0; background: #1a1a2e; border: 1px solid #2a2a3a; color: #e0e0e0; border-radius: 8px; }
-        .payment-option { border: 1px solid #2a2a3a; padding: 1rem; margin-bottom: 1rem; border-radius: 12px; cursor: pointer; background: #111122; }
+        
+        /* Form */
+        input, select { width: 100%; padding: 0.8rem; margin: 0.5rem 0; background: #1a1a2e; border: 1px solid #2a2a3a; color: #e0e0e0; border-radius: 8px; font-size: 1rem; }
+        
+        /* Payment Options */
+        .payment-option { border: 1px solid #2a2a3a; padding: 1rem; margin-bottom: 1rem; border-radius: 12px; cursor: pointer; background: #111122; transition: 0.2s; }
         .payment-option.selected { border-color: #c9a03d; background: #1a1a2e; }
-        .hidden { display: none; }
+        .payment-option h3 { color: #c9a03d; margin-bottom: 0.3rem; }
+        .payment-option p { font-size: 0.75rem; color: #888; }
+        
+        /* Payment Details Section */
+        .payment-details { background: #1a1a2e; padding: 1rem; border-radius: 12px; margin: 1rem 0; display: none; }
+        .payment-details.show { display: block; }
+        .mobile-options { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+        .mobile-option { background: #111122; border: 1px solid #2a2a3a; border-radius: 8px; padding: 0.8rem; cursor: pointer; text-align: center; flex: 1; min-width: 100px; }
+        .mobile-option.selected { border-color: #c9a03d; background: #1a1a2e; }
+        .mobile-option img { width: 40px; height: 40px; margin-bottom: 5px; }
+        
+        .bank-details { background: #1a1a2e; padding: 1rem; border-radius: 12px; margin: 1rem 0; border-left: 4px solid #c9a03d; }
+        .copy-btn { background: #2a2a3a; color: #c9a03d; border: none; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; margin-left: 10px; }
+        
         .checkout-btn { background: #c9a03d; color: #0a0a1a; padding: 1rem; width: 100%; border: none; font-weight: bold; font-size: 1.2rem; cursor: pointer; border-radius: 8px; margin-top: 1rem; }
+        .checkout-btn:hover { background: #b88a2c; }
         .back-link { display: inline-block; margin-top: 1rem; color: #c9a03d; text-decoration: none; }
-        .quantity-btn { background: #2a2a3a; border: none; color: #c9a03d; width: 30px; height: 30px; cursor: pointer; border-radius: 6px; }
+        
+        .quantity-btn { background: #2a2a3a; border: none; color: #c9a03d; width: 30px; height: 30px; cursor: pointer; border-radius: 6px; font-size: 1.1rem; }
         .remove-btn { background: #2a2a3a; border: none; color: #e0e0e0; padding: 5px 10px; cursor: pointer; border-radius: 6px; }
         .empty-cart { text-align: center; padding: 3rem; background: #111122; border-radius: 12px; }
         
-        /* Bank Details */
-        .bank-details { background: #1a1a2e; padding: 1.5rem; border-radius: 12px; margin: 1rem 0; border-left: 4px solid #c9a03d; }
-        .bank-details h3 { color: #c9a03d; margin-bottom: 1rem; }
-        .copy-btn { background: #2a2a3a; color: #c9a03d; border: none; padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; margin-left: 10px; }
-        
-        /* Back to Top Button */
-        .back-to-top {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #c9a03d;
-            color: #0a0a1a;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.5rem;
-            border: none;
-            opacity: 0;
-            visibility: hidden;
-            transition: 0.3s;
-            z-index: 1000;
-        }
-        .back-to-top.show {
-            opacity: 1;
-            visibility: visible;
-        }
-        .back-to-top:hover { background: #b88a2c; }
+        .back-to-top { position: fixed; bottom: 20px; right: 20px; background: #c9a03d; color: #0a0a1a; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5rem; border: none; opacity: 0; visibility: hidden; transition: 0.3s; z-index: 1000; }
+        .back-to-top.show { opacity: 1; visibility: visible; }
         
         @media (max-width: 600px) {
             .cart-item { flex-direction: column; text-align: center; }
             .cart-item-actions { justify-content: center; }
+            .mobile-options { flex-direction: column; }
         }
     </style>
 </head>
@@ -75,44 +62,86 @@
     <div id="cart-items"></div>
     <div id="total" class="total"></div>
 
-    <div id="checkout-section" style="display: none;">
-        <h2>Contact Information</h2>
-        <input type="text" id="customer-name" placeholder="Full name" required>
-        <input type="email" id="customer-email" placeholder="Email address" required>
-        <input type="tel" id="customer-phone" placeholder="Phone number (e.g., 024XXXXXXX)" required>
+    <!-- Checkout Form -->
+    <div id="checkout-section">
+        <h2>📋 Contact Information</h2>
+        <input type="text" id="customer-name" placeholder="Full name">
+        <input type="email" id="customer-email" placeholder="Email address">
+        <input type="tel" id="customer-phone" placeholder="Phone number (e.g., 024XXXXXXX)">
 
-        <h2>Payment Method</h2>
-        <div class="payment-option" onclick="selectPayment('bank')" id="pay-bank">
-            🏦 Bank Transfer
+        <h2>💳 Select Payment Method</h2>
+        
+        <!-- Paystack/Card Option -->
+        <div class="payment-option" onclick="selectPayment('card')" id="pay-card">
+            <h3>💳 Card Payment</h3>
+            <p>Pay with Visa, Mastercard</p>
         </div>
+
+        <!-- Mobile Money Option -->
         <div class="payment-option" onclick="selectPayment('mobile')" id="pay-mobile">
-            📱 Mobile Money (MTN, Telecel, AirtelTigo)
+            <h3>📱 Mobile Money</h3>
+            <p>MTN MoMo, Telecel Cash, AirtelTigo Money</p>
         </div>
 
-        <div id="mobile-field" class="hidden">
-            <select id="mobile-network">
-                <option value="mtn">MTN MoMo</option>
-                <option value="vodafone">Telecel Cash</option>
-                <option value="airteltigo">AirtelTigo Money</option>
-            </select>
-            <input type="tel" id="mobile-number" placeholder="Phone number">
+        <!-- Bank Transfer Option -->
+        <div class="payment-option" onclick="selectPayment('bank')" id="pay-bank">
+            <h3>🏦 Bank Transfer</h3>
+            <p>Pay via bank transfer</p>
         </div>
 
-        <div id="bank-details-container"></div>
+        <!-- Mobile Money Details (shows when Mobile Money selected) -->
+        <div id="mobile-details" class="payment-details">
+            <h3>📱 Select Mobile Money Network:</h3>
+            <div class="mobile-options">
+                <div class="mobile-option" onclick="selectMobileNetwork('mtn')" id="mobile-mtn">
+                    📱 MTN MoMo
+                </div>
+                <div class="mobile-option" onclick="selectMobileNetwork('telecel')" id="mobile-telecel">
+                    📱 Telecel Cash
+                </div>
+                <div class="mobile-option" onclick="selectMobileNetwork('airteltigo')" id="mobile-airteltigo">
+                    📱 AirtelTigo Money
+                </div>
+            </div>
+            <input type="tel" id="mobile-number" placeholder="Mobile Money phone number (e.g., 024XXXXXXX)">
+        </div>
 
-        <button class="checkout-btn" onclick="processPayment()">Complete Order</button>
+        <!-- Card Details (shows when Card selected) -->
+        <div id="card-details" class="payment-details">
+            <p style="color: #888; margin-bottom: 0.5rem;">You will be redirected to Paystack to complete your payment securely.</p>
+            <p style="color: #888; font-size: 0.8rem;">Accepts: Visa, Mastercard, American Express</p>
+        </div>
+
+        <!-- Bank Details (shows when Bank Transfer selected) -->
+        <div id="bank-details" class="payment-details">
+            <div class="bank-details">
+                <p><strong>Bank:</strong> Consolidated Bank Ghana</p>
+                <p><strong>Account Name:</strong> Midnight Muse</p>
+                <p><strong>Account Number:</strong> 1234567890</p>
+                <p><strong>Branch:</strong> Accra Main</p>
+                <p><strong>Reference:</strong> <span id="bank-ref">MNM-<span id="bank-ref-number">' + Date.now() + '</span></span> 
+                <button class="copy-btn" onclick="copyBankReference()">Copy</button></p>
+                <p style="font-size: 0.8rem; color: #888; margin-top: 0.5rem;">After payment, we'll confirm within 24 hours.</p>
+            </div>
+        </div>
+
+        <button class="checkout-btn" onclick="processPayment()">✅ Complete Order</button>
     </div>
 
-    <a href="index.html" class="back-link">← Continue Shopping</a>
+    <a href="index.html" class="back-link">← Back to Shop</a>
 </div>
 
-<!-- Back to Top Button -->
 <button class="back-to-top" id="backToTopBtn" onclick="scrollToTop()">↑</button>
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
 
 <script>
     // ==================== LOAD CART ====================
     let cart = JSON.parse(localStorage.getItem('cart')) || [];
-    let selectedPayment = 'bank';
+    let selectedPayment = 'card';
+    let selectedMobileNetwork = 'mtn';
+
+    console.log('Cart loaded:', cart);
 
     // ==================== BACK TO TOP ====================
     window.onscroll = function() {
@@ -123,235 +152,210 @@
             btn.classList.remove('show');
         }
     };
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-    function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // ==================== DISPLAY CART (WITH IMAGES) ====================
+    // ==================== DISPLAY CART ====================
     function displayCart() {
         const container = document.getElementById('cart-items');
         const totalDiv = document.getElementById('total');
-        const checkoutSection = document.getElementById('checkout-section');
-
+        
         if (!cart.length) {
             container.innerHTML = '<div class="empty-cart">🛍️ Your cart is empty.<br><br><a href="index.html" style="color: #c9a03d;">Continue shopping</a></div>';
             totalDiv.innerHTML = '';
-            checkoutSection.style.display = 'none';
             return;
         }
-
+        
         let html = '';
         let total = 0;
-
+        
         cart.forEach((item, index) => {
-            total += item.price * item.quantity;
+            const itemPrice = item.price || 0;
+            const itemQty = item.quantity || 1;
+            total += itemPrice * itemQty;
             html += `
                 <div class="cart-item">
-                    <img src="${item.image || 'https://placehold.co/70x70/1a1a2e/c9a03d?text=MNM'}" class="cart-item-image" onerror="this.src='https://placehold.co/70x70/1a1a2e/c9a03d?text=MNM'">
-                    <div class="cart-item-details">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-size">Size: ${item.size}</div>
-                        <div class="cart-item-price">₵${item.price} each</div>
+                    <div class="cart-item-info">
+                        <strong>${item.name || 'Item'}</strong><br>
+                        Size: ${item.size || 'N/A'} | ₵${itemPrice} each
                     </div>
                     <div class="cart-item-actions">
                         <button class="quantity-btn" onclick="changeQuantity(${index}, -1)">-</button>
-                        <span>${item.quantity}</span>
+                        <span style="min-width: 30px; text-align: center;">${itemQty}</span>
                         <button class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</button>
                         <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
                     </div>
-                    <div style="min-width: 80px; text-align: right;">₵${item.price * item.quantity}</div>
+                    <div style="min-width: 80px; text-align: right;">
+                        ₵${itemPrice * itemQty}
+                    </div>
                 </div>
             `;
         });
-
+        
         container.innerHTML = html;
         totalDiv.innerHTML = `TOTAL: ₵${total}`;
-        checkoutSection.style.display = 'block';
-        
-        if (selectedPayment === 'bank') {
-            showBankDetails();
-        }
     }
 
     function changeQuantity(index, delta) {
-        let newQty = cart[index].quantity + delta;
+        if (!cart[index]) return;
+        let newQty = (cart[index].quantity || 1) + delta;
         if (newQty < 1) return;
         cart[index].quantity = newQty;
         localStorage.setItem('cart', JSON.stringify(cart));
         displayCart();
-        updateCartCounter();
+        updateCartCount();
     }
 
     function removeItem(index) {
         cart.splice(index, 1);
         localStorage.setItem('cart', JSON.stringify(cart));
         displayCart();
-        updateCartCounter();
-        if (cart.length === 0) {
-            document.getElementById('checkout-section').style.display = 'none';
-        }
+        updateCartCount();
     }
 
-    function updateCartCounter() {
-        const total = cart.reduce((sum, i) => sum + i.quantity, 0);
+    function updateCartCount() {
+        const total = cart.reduce((sum, i) => sum + (i.quantity || 1), 0);
         localStorage.setItem('cartCount', total);
     }
 
-    // ==================== PAYMENT SELECTION ====================
+    // ==================== SELECT PAYMENT METHOD ====================
     function selectPayment(method) {
         selectedPayment = method;
-        document.getElementById('pay-bank').classList.remove('selected');
+        
+        // Update selected class on payment options
+        document.getElementById('pay-card').classList.remove('selected');
         document.getElementById('pay-mobile').classList.remove('selected');
+        document.getElementById('pay-bank').classList.remove('selected');
         document.getElementById(`pay-${method}`).classList.add('selected');
         
-        document.getElementById('mobile-field').classList.add('hidden');
-        document.getElementById('bank-details-container').innerHTML = '';
+        // Hide all payment details
+        document.getElementById('card-details').classList.remove('show');
+        document.getElementById('mobile-details').classList.remove('show');
+        document.getElementById('bank-details').classList.remove('show');
         
-        if (method === 'mobile') {
-            document.getElementById('mobile-field').classList.remove('hidden');
+        // Show selected payment details
+        if (method === 'card') {
+            document.getElementById('card-details').classList.add('show');
+        } else if (method === 'mobile') {
+            document.getElementById('mobile-details').classList.add('show');
+            updateBankReference();
         } else if (method === 'bank') {
-            showBankDetails();
+            document.getElementById('bank-details').classList.add('show');
+            updateBankReference();
         }
     }
 
-    // ==================== BANK DETAILS ====================
-    function showBankDetails() {
-        const container = document.getElementById('bank-details-container');
-        if (!container) return;
-        
-        container.innerHTML = `
-            <div class="bank-details">
-                <h3>🏦 Bank Transfer Details</h3>
-                <p><strong>Bank:</strong> Consolidated Bank Ghana</p>
-                <p><strong>Account Name:</strong> Midnight Muse</p>
-                <p><strong>Account Number:</strong> 1234567890</p>
-                <p><strong>Branch:</strong> Accra Main</p>
-                <p><strong>Reference:</strong> <span id="bank-ref">${generateOrderId()}</span> <button class="copy-btn" onclick="copyReference()">Copy</button></p>
-                <p style="font-size: 0.8rem; color: #888;">After payment, we'll confirm within 24 hours.</p>
-            </div>
-        `;
+    function selectMobileNetwork(network) {
+        selectedMobileNetwork = network;
+        document.getElementById('mobile-mtn').classList.remove('selected');
+        document.getElementById('mobile-telecel').classList.remove('selected');
+        document.getElementById('mobile-airteltigo').classList.remove('selected');
+        document.getElementById(`mobile-${network}`).classList.add('selected');
     }
 
-    function generateOrderId() {
-        return 'MNM-' + Date.now();
+    function updateBankReference() {
+        const refSpan = document.getElementById('bank-ref-number');
+        if (refSpan) {
+            refSpan.textContent = Date.now();
+        }
     }
 
-    function copyReference() {
-        const ref = document.getElementById('bank-ref').textContent;
-        navigator.clipboard.writeText(ref);
-        alert('Reference copied: ' + ref);
+    function copyBankReference() { 
+        const ref = document.getElementById('bank-ref').textContent; 
+        navigator.clipboard.writeText(ref); 
+        alert('Reference copied: ' + ref); 
     }
 
     // ==================== SAVE ORDER ====================
-    function saveOrder() {
-        if (!cart.length) return null;
-        
-        const orderId = generateOrderId();
-        const total = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-        
-        let completedOrders = JSON.parse(localStorage.getItem('completedOrders')) || [];
-        
-        completedOrders.push({
+    function saveOrder(orderId, total, paymentMethod) {
+        const orders = JSON.parse(localStorage.getItem('completedOrders')) || [];
+        orders.push({
             orderId: orderId,
             timestamp: new Date().toISOString(),
             totalAmount: total,
-            totalItems: cart.reduce((sum, i) => sum + i.quantity, 0),
-            items: cart.map(item => ({
-                name: item.name,
-                size: item.size,
-                quantity: item.quantity,
-                price: item.price,
-                image: item.image || ''
+            paymentMethod: paymentMethod,
+            totalItems: cart.reduce((sum, i) => sum + (i.quantity || 1), 0),
+            items: cart.map(item => ({ 
+                name: item.name, 
+                size: item.size, 
+                quantity: item.quantity || 1, 
+                price: item.price 
             }))
         });
+        localStorage.setItem('completedOrders', JSON.stringify(orders));
+        console.log('Order saved:', orderId);
+    }
+
+    // ==================== CLEAR CART ====================
+    function clearCartAndRedirect() {
+        cart = [];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        localStorage.setItem('cartCount', 0);
+        displayCart();
         
-        localStorage.setItem('completedOrders', JSON.stringify(completedOrders));
-        return orderId;
+        setTimeout(() => {
+            const goToDashboard = confirm('Order saved! View your dashboard?');
+            if (goToDashboard) {
+                window.location.href = 'dashboard.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 500);
     }
 
     // ==================== PROCESS PAYMENT ====================
     function processPayment() {
-        const name = document.getElementById('customer-name').value;
-        const email = document.getElementById('customer-email').value;
-        const phone = document.getElementById('customer-phone').value;
+        const name = document.getElementById('customer-name').value.trim();
+        const email = document.getElementById('customer-email').value.trim();
+        const phone = document.getElementById('customer-phone').value.trim();
 
         if (!name || !email || !phone) {
             alert('❌ Please fill in your name, email, and phone number');
             return;
         }
-
+        
         if (cart.length === 0) {
             alert('❌ Your cart is empty');
             return;
         }
 
-        const total = cart.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-        
-        const orderId = saveOrder();
-        
-        if (!orderId) {
-            alert('❌ Error saving order');
-            return;
-        }
+        const total = cart.reduce((sum, i) => sum + ((i.price || 0) * (i.quantity || 1)), 0);
+        const orderId = 'MNM-' + Date.now();
 
-        if (selectedPayment === 'bank') {
-            alert(`✅ ORDER PLACED!\n\nOrder #: ${orderId}\nName: ${name}\nTotal: ₵${total}\n\nUse the bank details above to complete payment.`);
-            
-            cart = [];
-            localStorage.setItem('cart', JSON.stringify(cart));
-            localStorage.setItem('cartCount', 0);
-            
-            document.getElementById('customer-name').value = '';
-            document.getElementById('customer-email').value = '';
-            document.getElementById('customer-phone').value = '';
-            
-            displayCart();
-            
-            setTimeout(() => {
-                const goToDashboard = confirm('Order saved! View your dashboard?');
-                if (goToDashboard) {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    window.location.href = 'index.html';
-                }
-            }, 500);
-        }
-        else if (selectedPayment === 'mobile') {
-            const mobilePhone = document.getElementById('mobile-number').value;
+        // Handle Mobile Money
+        if (selectedPayment === 'mobile') {
+            const mobilePhone = document.getElementById('mobile-number').value.trim();
             if (!mobilePhone) {
                 alert('❌ Please enter your mobile money phone number');
                 return;
             }
-            const network = document.getElementById('mobile-network').value;
-            const networkName = network === 'mtn' ? 'MTN MoMo' : (network === 'vodafone' ? 'Telecel Cash' : 'AirtelTigo Money');
             
-            alert(`✅ ORDER PLACED!\n\nOrder #: ${orderId}\nName: ${name}\nTotal: ₵${total}\n\n📱 ${networkName}\nPhone: ${mobilePhone}\n\nYou will receive a prompt to complete payment.`);
+            let networkName = '';
+            if (selectedMobileNetwork === 'mtn') networkName = 'MTN MoMo';
+            else if (selectedMobileNetwork === 'telecel') networkName = 'Telecel Cash';
+            else networkName = 'AirtelTigo Money';
             
-            cart = [];
-            localStorage.setItem('cart', JSON.stringify(cart));
-            localStorage.setItem('cartCount', 0);
-            
-            document.getElementById('customer-name').value = '';
-            document.getElementById('customer-email').value = '';
-            document.getElementById('customer-phone').value = '';
-            document.getElementById('mobile-number').value = '';
-            
-            displayCart();
-            
-            setTimeout(() => {
-                const goToDashboard = confirm('Order saved! View your dashboard?');
-                if (goToDashboard) {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    window.location.href = 'index.html';
-                }
-            }, 500);
+            saveOrder(orderId, total, `${networkName} - ${mobilePhone}`);
+            alert(`✅ ORDER PLACED!\n\nOrder #: ${orderId}\nName: ${name}\nTotal: ₵${total}\n\n📱 Mobile Money: ${networkName}\nPhone: ${mobilePhone}\n\nYou will receive a prompt to complete payment.`);
+            clearCartAndRedirect();
+        }
+        // Handle Card Payment
+        else if (selectedPayment === 'card') {
+            // Demo mode - show alert
+            alert(`✅ TEST ORDER PLACED!\n\nOrder #: ${orderId}\nName: ${name}\nTotal: ₵${total}\n\n💳 Card Payment\n\nThis is a demo. To accept real card payments, sign up at paystack.com.`);
+            saveOrder(orderId, total, 'Card Payment');
+            clearCartAndRedirect();
+        }
+        // Handle Bank Transfer
+        else if (selectedPayment === 'bank') {
+            saveOrder(orderId, total, 'Bank Transfer');
+            alert(`✅ ORDER PLACED!\n\nOrder #: ${orderId}\nName: ${name}\nTotal: ₵${total}\n\n🏦 Bank Transfer Details:\nBank: Consolidated Bank Ghana\nAccount: Midnight Muse\nNumber: 1234567890\nReference: ${orderId}\n\nAfter transfer, we'll confirm within 24 hours.`);
+            clearCartAndRedirect();
         }
     }
 
     // ==================== INITIALIZE ====================
     displayCart();
+    selectPayment('card'); // Set default payment method
 </script>
 </body>
 </html>
